@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>solar.co.ke — Component Showcase</title>
+<link rel="stylesheet" href="/assets/css/main.css">
+<style>
+  .showcase-section { padding-block: var(--ac-space-8); border-bottom: 1px solid var(--ac-paper-deep); }
+  .showcase-section h2 { margin-bottom: var(--ac-space-4); }
+  .showcase-row { display: flex; flex-wrap: wrap; gap: var(--ac-space-4); align-items: flex-start; }
+  .card { width: 16rem; }
+  pre.showcase-output { background: var(--ac-paper-deep); padding: var(--ac-space-3); border-radius: var(--ac-radius-control); font-size: 0.8rem; overflow-x: auto; }
+</style>
+</head>
+<body>
+  <header class="site-header container">
+    <strong>solar.co.ke</strong>
+    <span class="card__meta">Component Showcase — not a real page, see /planning/04-solar-co-ke/user-flows.md for the real flows</span>
+  </header>
+
+  <main class="container">
+    <section class="showcase-section">
+      <h2>Card</h2>
+      <div class="showcase-row" id="card-demo"></div>
+    </section>
+
+    <section class="showcase-section">
+      <h2>Status Timeline</h2>
+      <div id="timeline-demo" style="max-width: 48rem;"></div>
+    </section>
+
+    <section class="showcase-section">
+      <h2>Slot Picker (Booking Calendar — single-slot mode, for site-survey appointments)</h2>
+      <div id="slot-demo"></div>
+      <p id="slot-selection" class="card__meta"></p>
+    </section>
+
+    <section class="showcase-section">
+      <h2>Status Badge (pixel lane, code-generated)</h2>
+      <div class="showcase-row" id="badge-demo"></div>
+    </section>
+
+    <section class="showcase-section">
+      <h2>Sticky CTA</h2>
+      <div id="sticky-cta-demo"></div>
+    </section>
+
+    <section class="showcase-section">
+      <h2>Modal</h2>
+      <button class="btn btn--primary" id="open-modal-btn">Open modal</button>
+    </section>
+
+    <section class="showcase-section">
+      <h2>Live API check</h2>
+      <p class="card__meta">Fetches <code>GET /api/v1/store/products</code> from the real running backend — proves this page and the API are the same app, not a mockup.</p>
+      <pre class="showcase-output" id="api-output">loading…</pre>
+    </section>
+  </main>
+
+  <footer class="site-footer container">
+    <span class="card__meta">artcollect.co.ke-derived design system — see /planning/00-portfolio/artcollect-design-system.md</span>
+  </footer>
+
+  <script type="module">
+    import { createCard } from "/assets/js/components/card.js";
+    import { createStatusTimeline, SOLAR_INSTALLATION_STEPS } from "/assets/js/components/status-timeline.js";
+    import { createSlotPicker } from "/assets/js/components/booking-calendar.js";
+    import { createStatusBadge } from "/assets/js/components/status-badge.js";
+    import { createStickyCta } from "/assets/js/components/sticky-cta.js";
+    import { openModal } from "/assets/js/components/modal.js";
+
+    // Card
+    const cardDemo = document.getElementById("card-demo");
+    cardDemo.appendChild(createCard({
+      title: "SunTech Installers Ltd",
+      meta: ["3 valid certifications"],
+      onSelect: () => alert("Selected SunTech Installers Ltd"),
+    }));
+
+    // Status Timeline
+    document.getElementById("timeline-demo").appendChild(
+      createStatusTimeline({ steps: SOLAR_INSTALLATION_STEPS, currentIndex: 4 })
+    );
+
+    // Slot Picker
+    const slotOutput = document.getElementById("slot-selection");
+    document.getElementById("slot-demo").appendChild(
+      createSlotPicker({
+        slots: [
+          { id: "mon-am", label: "Mon 8–10am", available: true },
+          { id: "mon-pm", label: "Mon 2–4pm", available: true },
+          { id: "tue-am", label: "Tue 8–10am", available: false },
+        ],
+        onSelect: (slotId) => { slotOutput.textContent = `Selected slot: ${slotId}`; },
+      })
+    );
+
+    // Status Badge
+    const badgeDemo = document.getElementById("badge-demo");
+    badgeDemo.appendChild(createStatusBadge({ label: "open for quotes", tone: "neutral" }));
+    badgeDemo.appendChild(createStatusBadge({ label: "installing", tone: "warning" }));
+    badgeDemo.appendChild(createStatusBadge({ label: "completed", tone: "success", icon: "check" }));
+    badgeDemo.appendChild(createStatusBadge({ label: "disputed", tone: "danger", icon: "alert" }));
+
+    // Sticky CTA
+    document.getElementById("sticky-cta-demo").appendChild(
+      createStickyCta({ label: "Book an installation", onClick: () => alert("Would go to the installation booking form") })
+    );
+
+    // Modal
+    document.getElementById("open-modal-btn").addEventListener("click", () => {
+      const content = document.createElement("div");
+      content.innerHTML = "<h3>Confirm booking</h3><p>This is the shared Modal component.</p>";
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "btn btn--secondary";
+      closeBtn.textContent = "Close";
+      content.appendChild(closeBtn);
+      const { close } = openModal({ content });
+      closeBtn.addEventListener("click", close);
+    });
+
+    // Live API check
+    fetch("/api/v1/store/products")
+      .then((r) => r.json())
+      .then((data) => { document.getElementById("api-output").textContent = JSON.stringify(data, null, 2); })
+      .catch((e) => { document.getElementById("api-output").textContent = "Error: " + e.message; });
+  </script>
+</body>
+</html>
