@@ -25,6 +25,17 @@ final class View
         require __DIR__ . '/../Views/layout.php';
     }
 
+    /** Render a reusable fragment from src/Views/partials/ and return its HTML. */
+    public static function partial(string $name, array $data = []): string
+    {
+        extract($data);
+
+        ob_start();
+        require __DIR__ . '/../Views/partials/' . $name . '.php';
+
+        return ob_get_clean();
+    }
+
     public static function e(?string $value): string
     {
         return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');

@@ -37,18 +37,13 @@ use Solar\Core\View;
   <?php if ($dbError): ?>
     <p class="card__meta"><?= View::e($dbError) ?></p>
   <?php elseif (empty($installers)): ?>
-    <p class="card__meta">No installers are onboarded yet in this environment — see src/Controllers/InstallerController.php to add one, or seed the <code>users</code>/<code>installer_certifications</code> tables directly for a demo.</p>
+    <p class="card__meta">No verified installers are listed yet. Installers appear here once their KYC and certification have been approved.</p>
   <?php else: ?>
-    <div style="display:flex; flex-wrap:wrap; gap: var(--ac-space-4); margin-top: var(--ac-space-4);">
+    <div class="installer-grid">
       <?php foreach ($installers as $installer): ?>
-        <div class="card" style="width: 16rem;">
-          <h3><?= View::e($installer['full_name']) ?></h3>
-          <div class="card__meta">
-            <?= (int) $installer['valid_certifications'] ?> valid certification<?= (int) $installer['valid_certifications'] === 1 ? '' : 's' ?>
-          </div>
-          <a href="/installers/<?= (int) $installer['id'] ?>" class="btn btn--secondary" style="margin-top: var(--ac-space-3);">View profile</a>
-        </div>
+        <?= View::partial('installer-card', ['installer' => $installer]) ?>
       <?php endforeach; ?>
     </div>
+    <p style="margin-top: var(--ac-space-4);"><a href="/installers" class="btn btn--secondary">See all installers</a></p>
   <?php endif; ?>
 </section>

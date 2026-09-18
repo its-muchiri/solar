@@ -20,7 +20,12 @@
   </label>
   <label>
     Certification type
-    <input type="text" name="certification_type" required placeholder="e.g. EPRA solar PV installer license" style="display:block; width:100%; padding: var(--ac-space-2); margin-top: var(--ac-space-1);">
+    <select name="certification_type" required style="display:block; width:100%; padding: var(--ac-space-2); margin-top: var(--ac-space-1);">
+      <option value="" disabled selected>Choose…</option>
+      <?php foreach (\Solar\Models\Installer::CERTIFICATION_TYPES as $key => $label): ?>
+        <option value="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+      <?php endforeach; ?>
+    </select>
   </label>
   <label>
     Certification expiry date

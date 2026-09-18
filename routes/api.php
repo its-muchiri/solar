@@ -66,6 +66,7 @@ $router->get('/api/v1/disputes', [$dispute, 'index']);
 $router->patch('/api/v1/disputes/{id}/resolve', [$dispute, 'resolve']);
 
 // Installer onboarding (Tier 3 KYC + certification tracking)
+$router->get('/api/v1/installers', [$installer, 'index']);
 $router->post('/api/v1/installers/onboard', [$installer, 'onboard']);
 $router->get('/api/v1/installers/{id}', [$installer, 'profile']);
 

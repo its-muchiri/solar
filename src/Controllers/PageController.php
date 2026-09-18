@@ -5,7 +5,9 @@ namespace Solar\Controllers;
 use Solar\Config\Database;
 use Solar\Core\Request;
 use Solar\Core\View;
+use Solar\Models\Installer;
 use Solar\Models\SolarBooking;
+use InvalidArgumentException;
 use Throwable;
 
 /**
@@ -29,15 +31,7 @@ final class PageController
         $dbError = null;
 
         try {
-            $stmt = Database::connection()->query(
-                'SELECT u.id, u.full_name,
-                        (SELECT COUNT(*) FROM installer_certifications ic WHERE ic.installer_id = u.id AND ic.status = \'valid\') AS valid_certifications
-                 FROM users u
-                 WHERE u.account_type = \'provider\' AND u.status = \'active\'
-                 ORDER BY u.id DESC
-                 LIMIT 6'
-            );
-            $installers = $stmt->fetchAll();
+            $installers = Installer::search(['sort' => 'rating'], 3);
         } catch (Throwable $e) {
             error_log((string) $e);
             $dbError = 'Live installer data is unavailable in this environment — no database is connected yet.';
@@ -74,16 +68,17 @@ final class PageController
     {
         $installers = [];
         $dbError = null;
+        $filterError = null;
 
         try {
-            $stmt = Database::connection()->query(
-                'SELECT u.id, u.full_name,
-                        (SELECT COUNT(*) FROM installer_certifications ic WHERE ic.installer_id = u.id AND ic.status = \'valid\') AS valid_certifications
-                 FROM users u
-                 WHERE u.account_type = \'provider\' AND u.status = \'active\'
-                 ORDER BY u.full_name ASC'
-            );
-            $installers = $stmt->fetchAll();
+            $filters = Installer::parseFilters($request->query);
+        } catch (InvalidArgumentException $e) {
+            $filterError = 'That certification filter is not recognised, so all installers are shown.';
+            $filters = Installer::parseFilters([]);
+        }
+
+        try {
+            $installers = Installer::search($filters);
         } catch (Throwable $e) {
             error_log((string) $e);
             $dbError = 'Live installer data is unavailable in this environment — no database is connected yet.';
@@ -92,6 +87,8 @@ final class PageController
         View::render('installer-index', [
             'title' => 'Browse installers',
             'installers' => $installers,
+            'filters' => $filters,
+            'filterError' => $filterError,
             'dbError' => $dbError,
         ]);
     }
@@ -103,19 +100,14 @@ final class PageController
         $dbError = null;
 
         try {
-            $db = Database::connection();
-            $stmt = $db->prepare('SELECT id, full_name, status FROM users WHERE id = :id AND account_type = \'provider\'');
-            $stmt->execute(['id' => $installerId]);
-            $installer = $stmt->fetch() ?: null;
-
-            if ($installer) {
-                $certStmt = $db->prepare('SELECT certification_type, expires_at, status FROM installer_certifications WHERE installer_id = :id');
-                $certStmt->execute(['id' => $installerId]);
-                $installer['certifications'] = $certStmt->fetchAll();
-            }
+            $installer = Installer::find($installerId);
         } catch (Throwable $e) {
             error_log((string) $e);
             $dbError = 'Live installer data is unavailable in this environment — no database is connected yet.';
+        }
+
+        if (!$installer && !$dbError) {
+            http_response_code(404);
         }
 
         View::render('installer-profile', [
