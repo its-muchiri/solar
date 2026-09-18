@@ -19,7 +19,7 @@ final class InstallationController
             'INSERT INTO solar_bookings
                 (customer_id, sizing_calculation_id, status, site_address, site_lat, site_lng,
                  total_contract_value, deposit_amount, created_at, updated_at)
-             VALUES (:customer_id, :sizing_calculation_id, "open_for_quotes", :site_address, :site_lat, :site_lng,
+             VALUES (:customer_id, :sizing_calculation_id, \'open_for_quotes\', :site_address, :site_lat, :site_lng,
                  0, 0, NOW(), NOW())'
         );
         $stmt->execute([
@@ -36,7 +36,7 @@ final class InstallationController
     public function index(Request $request): void
     {
         $db = Database::connection();
-        $stmt = $db->query('SELECT * FROM solar_bookings WHERE status = "open_for_quotes" ORDER BY created_at DESC');
+        $stmt = $db->query('SELECT * FROM solar_bookings WHERE status = \'open_for_quotes\' ORDER BY created_at DESC');
 
         Response::json($stmt->fetchAll());
     }
@@ -67,7 +67,7 @@ final class InstallationController
             'INSERT INTO installation_quotes
                 (booking_id, installer_id, quoted_panel_capacity_kw, quoted_battery_capacity_kwh,
                  quoted_inverter_rating_kw, quoted_amount, deviation_flag, status, created_at)
-             VALUES (:booking_id, :installer_id, :panel_kw, :battery_kwh, :inverter_kw, :amount, false, "submitted", NOW())'
+             VALUES (:booking_id, :installer_id, :panel_kw, :battery_kwh, :inverter_kw, :amount, false, \'submitted\', NOW())'
         );
         $stmt->execute([
             'booking_id' => $request->params['id'],
@@ -84,20 +84,34 @@ final class InstallationController
     public function acceptQuote(Request $request): void
     {
         $db = Database::connection();
-        $stmt = $db->prepare('UPDATE installation_quotes SET status = "accepted" WHERE id = :quote_id');
+        $stmt = $db->prepare('UPDATE installation_quotes SET status = \'accepted\' WHERE id = :quote_id');
         $stmt->execute(['quote_id' => $request->params['quoteId']]);
 
-        $stmt = $db->prepare(
-            'UPDATE solar_bookings b
-             JOIN installation_quotes q ON q.id = :quote_id
-             SET b.installer_id = q.installer_id,
-                 b.contracted_panel_capacity_kw = q.quoted_panel_capacity_kw,
-                 b.contracted_battery_capacity_kwh = q.quoted_battery_capacity_kwh,
-                 b.contracted_inverter_rating_kw = q.quoted_inverter_rating_kw,
-                 b.total_contract_value = q.quoted_amount,
-                 b.status = "quote_accepted", b.updated_at = NOW()
-             WHERE b.id = :booking_id'
-        );
+        // MySQL's multi-table UPDATE...JOIN has no Postgres equivalent —
+        // Postgres uses UPDATE...FROM instead — so this branches on the
+        // active driver; see Database::driver() and
+        // planning/00-portfolio/ui-implementation-plan.md for why both
+        // exist (Vercel's Marketplace has no MySQL-compatible database).
+        $sql = Database::driver() === 'pgsql'
+            ? 'UPDATE solar_bookings b
+               SET installer_id = q.installer_id,
+                   contracted_panel_capacity_kw = q.quoted_panel_capacity_kw,
+                   contracted_battery_capacity_kwh = q.quoted_battery_capacity_kwh,
+                   contracted_inverter_rating_kw = q.quoted_inverter_rating_kw,
+                   total_contract_value = q.quoted_amount,
+                   status = \'quote_accepted\', updated_at = NOW()
+               FROM installation_quotes q
+               WHERE q.id = :quote_id AND b.id = :booking_id'
+            : 'UPDATE solar_bookings b
+               JOIN installation_quotes q ON q.id = :quote_id
+               SET b.installer_id = q.installer_id,
+                   b.contracted_panel_capacity_kw = q.quoted_panel_capacity_kw,
+                   b.contracted_battery_capacity_kwh = q.quoted_battery_capacity_kwh,
+                   b.contracted_inverter_rating_kw = q.quoted_inverter_rating_kw,
+                   b.total_contract_value = q.quoted_amount,
+                   b.status = \'quote_accepted\', b.updated_at = NOW()
+               WHERE b.id = :booking_id';
+        $stmt = $db->prepare($sql);
         $stmt->execute(['quote_id' => $request->params['quoteId'], 'booking_id' => $request->params['id']]);
 
         Response::json(['id' => (int) $request->params['id'], 'status' => 'quote_accepted']);
@@ -140,7 +154,7 @@ final class InstallationController
     public function cancel(Request $request): void
     {
         $db = Database::connection();
-        $stmt = $db->prepare('UPDATE solar_bookings SET status = "cancelled", updated_at = NOW() WHERE id = :id');
+        $stmt = $db->prepare('UPDATE solar_bookings SET status = \'cancelled\', updated_at = NOW() WHERE id = :id');
         $stmt->execute(['id' => $request->params['id']]);
 
         Response::json(['id' => (int) $request->params['id'], 'status' => 'cancelled']);

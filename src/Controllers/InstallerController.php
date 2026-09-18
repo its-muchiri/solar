@@ -32,7 +32,7 @@ final class InstallerController
         try {
             $stmt = $db->prepare(
                 'INSERT INTO kyc_documents (user_id, document_type, file_reference, verification_status)
-                 VALUES (:user_id, :document_type, :file_reference, "pending")'
+                 VALUES (:user_id, :document_type, :file_reference, \'pending\')'
             );
             $certificationDocId = null;
             foreach ($documents as $document) {
@@ -49,7 +49,7 @@ final class InstallerController
             if ($certificationDocId && $request->input('certification_type') && $request->input('certification_expires_at')) {
                 $stmt = $db->prepare(
                     'INSERT INTO installer_certifications (installer_id, certification_kyc_document_id, certification_type, expires_at, status)
-                     VALUES (:installer_id, :doc_id, :cert_type, :expires_at, "valid")'
+                     VALUES (:installer_id, :doc_id, :cert_type, :expires_at, \'valid\')'
                 );
                 $stmt->execute([
                     'installer_id' => $installerId,
@@ -59,7 +59,7 @@ final class InstallerController
                 ]);
             }
 
-            $stmt = $db->prepare('UPDATE users SET status = "pending_verification" WHERE id = :id');
+            $stmt = $db->prepare('UPDATE users SET status = \'pending_verification\' WHERE id = :id');
             $stmt->execute(['id' => $installerId]);
 
             $db->commit();
@@ -73,7 +73,7 @@ final class InstallerController
     public function profile(Request $request): void
     {
         $db = Database::connection();
-        $stmt = $db->prepare('SELECT id, full_name, status FROM users WHERE id = :id AND account_type = "provider"');
+        $stmt = $db->prepare('SELECT id, full_name, status FROM users WHERE id = :id AND account_type = \'provider\'');
         $stmt->execute(['id' => $request->params['id']]);
         $installer = $stmt->fetch();
 

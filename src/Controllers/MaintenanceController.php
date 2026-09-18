@@ -47,7 +47,7 @@ final class MaintenanceController
         $stmt = $db->prepare(
             'INSERT INTO maintenance_subscriptions
                 (customer_id, booking_id, fulfilling_provider_id, frequency, subscription_fee, status, next_service_due_at, created_at)
-             VALUES (:customer_id, :booking_id, :provider_id, :frequency, :fee, "active", :next_due, NOW())'
+             VALUES (:customer_id, :booking_id, :provider_id, :frequency, :fee, \'active\', :next_due, NOW())'
         );
         $stmt->execute([
             'customer_id' => $request->user['id'] ?? null,

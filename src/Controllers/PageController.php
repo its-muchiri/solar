@@ -31,9 +31,9 @@ final class PageController
         try {
             $stmt = Database::connection()->query(
                 'SELECT u.id, u.full_name,
-                        (SELECT COUNT(*) FROM installer_certifications ic WHERE ic.installer_id = u.id AND ic.status = "valid") AS valid_certifications
+                        (SELECT COUNT(*) FROM installer_certifications ic WHERE ic.installer_id = u.id AND ic.status = \'valid\') AS valid_certifications
                  FROM users u
-                 WHERE u.account_type = "provider" AND u.status = "active"
+                 WHERE u.account_type = \'provider\' AND u.status = \'active\'
                  ORDER BY u.id DESC
                  LIMIT 6'
             );
@@ -63,9 +63,9 @@ final class PageController
         try {
             $stmt = Database::connection()->query(
                 'SELECT u.id, u.full_name,
-                        (SELECT COUNT(*) FROM installer_certifications ic WHERE ic.installer_id = u.id AND ic.status = "valid") AS valid_certifications
+                        (SELECT COUNT(*) FROM installer_certifications ic WHERE ic.installer_id = u.id AND ic.status = \'valid\') AS valid_certifications
                  FROM users u
-                 WHERE u.account_type = "provider" AND u.status = "active"
+                 WHERE u.account_type = \'provider\' AND u.status = \'active\'
                  ORDER BY u.full_name ASC'
             );
             $installers = $stmt->fetchAll();
@@ -89,7 +89,7 @@ final class PageController
 
         try {
             $db = Database::connection();
-            $stmt = $db->prepare('SELECT id, full_name, status FROM users WHERE id = :id AND account_type = "provider"');
+            $stmt = $db->prepare('SELECT id, full_name, status FROM users WHERE id = :id AND account_type = \'provider\'');
             $stmt->execute(['id' => $installerId]);
             $installer = $stmt->fetch() ?: null;
 
