@@ -1,5 +1,6 @@
 <h1>System sizing calculator</h1>
-<p class="card__meta">Tell us your desired backup duration and we'll recommend a panel, battery, and inverter size.</p>
+<p class="card__meta">List the appliances you want to run, your desired backup duration, and (optionally) your budget — we'll recommend a panel, battery, and inverter size independent of any installer's quote. Use this as your reference point: a quote that deviates significantly from this recommendation is worth asking about.</p>
+<p class="card__meta">This is an estimate based on standard sizing methodology, not a substitute for a site survey — your installer's post-survey recommendation may refine it.</p>
 
 <div id="sizing-form-container" style="margin-top: var(--ac-space-4);"></div>
 <div id="sizing-result"></div>
@@ -21,11 +22,7 @@
       `;
     },
     onError: (message) => {
-      // Expected right now: SizingController::calculate() intentionally
-      // throws until a validated sizing methodology is designed by someone
-      // with solar-engineering domain expertise — see that controller's
-      // docblock. This is the real, current state of the app, not a bug.
-      resultEl.innerHTML = `<p class="sizing-form__result" style="margin-top: var(--ac-space-4); color: var(--ac-danger);">${message} — this is expected: the sizing methodology is intentionally unimplemented pending domain-expert validation (see src/Controllers/SizingController.php).</p>`;
+      resultEl.innerHTML = `<p class="sizing-form__result" style="margin-top: var(--ac-space-4); color: var(--ac-danger);">${message}</p>`;
     },
   });
 
