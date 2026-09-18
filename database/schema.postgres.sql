@@ -156,7 +156,7 @@ CREATE TABLE system_sizing_calculations (
     recommended_inverter_rating_kw DECIMAL(6,2) NOT NULL,
     estimated_cost_range_min DECIMAL(12,2) NOT NULL,
     estimated_cost_range_max DECIMAL(12,2) NOT NULL,
-    calculator_version VARCHAR(20) NOT NULL,
+    calculator_version VARCHAR(40) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

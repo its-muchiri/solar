@@ -14,6 +14,11 @@ final class InstallationController
 {
     public function create(Request $request): void
     {
+        if (!$request->user) {
+            Response::unauthorized('Sign in as a customer to request an installation');
+            return;
+        }
+
         $db = Database::connection();
         $stmt = $db->prepare(
             'INSERT INTO solar_bookings
@@ -58,6 +63,11 @@ final class InstallationController
 
     public function submitQuote(Request $request): void
     {
+        if (!$request->user) {
+            Response::unauthorized('Sign in as an installer to submit a quote');
+            return;
+        }
+
         $db = Database::connection();
 
         // TODO: compare quoted capacity against the linked sizing
@@ -119,6 +129,11 @@ final class InstallationController
 
     public function submitSiteSurvey(Request $request): void
     {
+        if (!$request->user) {
+            Response::unauthorized('Sign in as an installer to submit a site survey');
+            return;
+        }
+
         $db = Database::connection();
         $stmt = $db->prepare(
             'INSERT INTO site_surveys
@@ -162,6 +177,11 @@ final class InstallationController
 
     public function submitCommissioningReport(Request $request): void
     {
+        if (!$request->user) {
+            Response::unauthorized('Sign in as an installer to submit a commissioning report');
+            return;
+        }
+
         $db = Database::connection();
         $stmt = $db->prepare(
             'INSERT INTO post_installation_reports

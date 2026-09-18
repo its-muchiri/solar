@@ -14,8 +14,13 @@ final class InstallerController
 {
     public function onboard(Request $request): void
     {
+        if (!$request->user) {
+            Response::unauthorized('Sign in as an installer to submit KYC documents');
+            return;
+        }
+
         $db = Database::connection();
-        $installerId = $request->user['id'] ?? null;
+        $installerId = $request->user['id'];
 
         $requiredDocs = ['national_id', 'business_registration', 'professional_certification'];
         $documents = $request->input('documents', []);

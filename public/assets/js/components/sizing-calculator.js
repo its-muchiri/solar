@@ -1,3 +1,5 @@
+import { authHeaders, getUser } from "/assets/js/lib/auth-session.js";
+
 /**
  * System-sizing calculator form — collects the customer's appliance/energy
  * profile, desired backup duration, and optional budget range, then submits
@@ -85,6 +87,11 @@ export function createSizingForm({ onResult, onError }) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    if (!getUser()) {
+      onError('Sign in first to save your sizing result to your account — <a href="/login?next=/sizing">log in</a> or <a href="/signup">sign up</a>.');
+      return;
+    }
+
     const applianceProfile = Array.from(applianceList.querySelectorAll(".sizing-form__appliance-row")).map((row) => ({
       appliance: row.querySelector('[name="appliance_name"]').value,
       watts: Number(row.querySelector('[name="appliance_watts"]').value),
@@ -98,7 +105,7 @@ export function createSizingForm({ onResult, onError }) {
     try {
       const response = await fetch("/api/v1/sizing-calculations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
           appliance_profile: applianceProfile,
           desired_backup_duration_hours: Number(backupHoursInput.value),

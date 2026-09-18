@@ -50,6 +50,21 @@ final class PageController
         ]);
     }
 
+    public function loginForm(Request $request): void
+    {
+        View::render('login', ['title' => 'Log in']);
+    }
+
+    public function signupForm(Request $request): void
+    {
+        View::render('signup', ['title' => 'Sign up']);
+    }
+
+    public function onboardingForm(Request $request): void
+    {
+        View::render('onboarding', ['title' => 'Installer verification']);
+    }
+
     public function sizingForm(Request $request): void
     {
         View::render('sizing', ['title' => 'System sizing calculator']);

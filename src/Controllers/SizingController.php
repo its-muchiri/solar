@@ -62,6 +62,11 @@ final class SizingController
 
     public function create(Request $request): void
     {
+        if (!$request->user) {
+            Response::unauthorized('Sign in to save a sizing calculation to your account');
+            return;
+        }
+
         $applianceProfile = $request->input('appliance_profile', []);
         $desiredBackupHours = $request->input('desired_backup_duration_hours');
         $desiredBackupHours = $desiredBackupHours !== null ? (float) $desiredBackupHours : null;

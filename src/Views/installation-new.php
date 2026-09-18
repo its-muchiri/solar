@@ -21,15 +21,24 @@ use Solar\Core\View;
 <p id="installation-result" class="card__meta" style="margin-top: var(--ac-space-4);"></p>
 
 <script type="module">
-  document.getElementById("installation-form").addEventListener("submit", async (event) => {
+  import { authHeaders, getUser } from "/assets/js/lib/auth-session.js";
+
+  const resultEl = document.getElementById("installation-result");
+  const form = document.getElementById("installation-form");
+
+  if (!getUser()) {
+    resultEl.innerHTML = `Sign in first — <a href="/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}">log in</a> or <a href="/signup">sign up</a> to request an installation.`;
+    form.hidden = true;
+  }
+
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-    const resultEl = document.getElementById("installation-result");
 
     try {
       const res = await fetch("/api/v1/installations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
           site_address: formData.get("site_address"),
           site_lat: 0,
@@ -40,10 +49,7 @@ use Solar\Core\View;
       const data = await res.json();
 
       if (!res.ok) {
-        // Expected right now: no auth middleware exists yet, so customer_id
-        // resolves to null and the database rejects the insert. See
-        // src/Controllers/InstallationController.php.
-        resultEl.textContent = "Request failed: " + (data.error || "unknown error") + " — expected until auth middleware and a live database are wired up.";
+        resultEl.textContent = "Request failed: " + (data.error || "unknown error");
         return;
       }
 

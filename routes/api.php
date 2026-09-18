@@ -6,6 +6,7 @@
  * @var \Solar\Core\Router $router
  */
 
+use Solar\Controllers\AuthController;
 use Solar\Controllers\DisputeController;
 use Solar\Controllers\InstallationController;
 use Solar\Controllers\InstallerController;
@@ -15,6 +16,7 @@ use Solar\Controllers\ReviewController;
 use Solar\Controllers\SizingController;
 use Solar\Controllers\StoreController;
 
+$auth = new AuthController();
 $sizing = new SizingController();
 $installation = new InstallationController();
 $payment = new PaymentController();
@@ -23,6 +25,11 @@ $dispute = new DisputeController();
 $installer = new InstallerController();
 $store = new StoreController();
 $maintenance = new MaintenanceController();
+
+// Auth (issues the bearer token every other write endpoint requires)
+$router->post('/api/v1/auth/signup', [$auth, 'signup']);
+$router->post('/api/v1/auth/login', [$auth, 'login']);
+$router->get('/api/v1/auth/me', [$auth, 'me']);
 
 // System sizing
 $router->post('/api/v1/sizing-calculations', [$sizing, 'create']);

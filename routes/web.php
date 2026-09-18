@@ -16,6 +16,9 @@ use Solar\Controllers\PageController;
 $page = new PageController();
 
 $router->get('/', [$page, 'home']);
+$router->get('/login', [$page, 'loginForm']);
+$router->get('/signup', [$page, 'signupForm']);
+$router->get('/onboarding', [$page, 'onboardingForm']);
 $router->get('/sizing', [$page, 'sizingForm']);
 $router->get('/installers', [$page, 'installerIndex']);
 $router->get('/installers/{id}', [$page, 'installerProfile']);
